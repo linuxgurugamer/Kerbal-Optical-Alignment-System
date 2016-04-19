@@ -12,7 +12,6 @@
  *            
  * 
  * */
-
 using System;
 using System.IO;
 using UnityEngine;
@@ -22,19 +21,26 @@ namespace DPCamera
 	public class DPCamera : PartModule
 	{
 		[KSPField]
-		public Vector3 cameraPosition = Vector3.zero;	//Eyepoint
+		public Vector3
+			cameraPosition = Vector3.zero;		//Eyepoint
 		[KSPField]
-		public Vector3 cameraForward = Vector3.forward;	//Viewing Direction
+		public Vector3
+			cameraForward = Vector3.forward;	//Viewing Direction
 		[KSPField]
-		public Vector3 cameraUp = Vector3.up;		//UP direction
+		public Vector3
+			cameraUp = Vector3.up;			//UP direction
 		[KSPField]
-		public string cameraTransformName = "";		//transform
+		public string
+			cameraTransformName = "";		//transform
 		[KSPField]
-		public float cameraFoV = 60;			//Zoom (FOV angle)
+		public float
+			cameraFoV = 60;				//Zoom (FOV angle)
 		[KSPField(isPersistant = false)]
-		public float cameraClip = 0.01f;		//Distance at which clipping occurs
+		public float
+			cameraClip = 0.01f;			//Distance at which clipping occurs
 		[KSPField(isPersistant = false)]
-		public string cameraName = "DPCam";		//Name Ident
+		public string
+			cameraName = "DPCam";			//Name Ident
 		public FlightCamera stdCam;
 		protected static Transform sOrigParent;
 		protected static Quaternion sOrigRotation = Quaternion.identity;
@@ -52,11 +58,10 @@ namespace DPCamera
 	* clicked, the ActivateEvent() function is called.
 	*/
 		[KSPEvent(guiActive = true, guiName = "View from Here")]
-		public void ActivateEvent()
+		public void ActivateEvent ()
 		{
-			if (!inDPCam)
-			{
-				ScreenMessages.PostScreenMessage("Docking View Activated - Press " + GameSettings.CAMERA_MODE.primary + " to Escape", 5.0f, ScreenMessageStyle.UPPER_CENTER);
+			if (!inDPCam) {
+				ScreenMessages.PostScreenMessage ("Docking View Activated - Press " + GameSettings.CAMERA_MODE.primary + " to Escape", 5.0f, ScreenMessageStyle.UPPER_CENTER);
 				
 				stdCam = FlightCamera.fetch;
 				
@@ -71,17 +76,15 @@ namespace DPCamera
 				setDPCam ();
 				
 				// Lockout the "View" camera mode key from being used when in DPCamera view
-				InputLockManager.SetControlLock(ControlTypes.CAMERAMODES, "DPCamLock");
+				InputLockManager.SetControlLock (ControlTypes.CAMERAMODES, "DPCamLock");
 				// Remove the rightclick GUI so it's not in the way
-				UIPartActionController.Instance.Deselect(true);
+				UIPartActionController.Instance.Deselect (true);
 				// Flag for FixedUpdate conditional statement below
 				inDPCam = true;
 				// This will hide the Activate event, and show the Deactivate event.
-				Events["ActivateEvent"].active = false;
-				Events["DeactivateEvent"].active = true;
-			}
-			else
-			{
+				Events ["ActivateEvent"].active = false;
+				Events ["DeactivateEvent"].active = true;
+			} else {
 				Debug.LogWarning ("[DPCamera] DPCam Activated when while inDPCam");
 			}
 		}
@@ -90,23 +93,23 @@ namespace DPCamera
 	 */
 		
 		[KSPEvent(guiActive = true, guiName = "Close this Window", active = false)]
-		public void DeactivateEvent()
+		public void DeactivateEvent ()
 		{
 			// Remove the rightclick GUI so it's not in the way
-			UIPartActionController.Instance.Deselect(true);
+			UIPartActionController.Instance.Deselect (true);
 		}
 		
-		public void setDPCam()
+		public void setDPCam ()
 		{
 			stdCam.setTarget (null);
-			stdCam.transform.parent = (cameraTransformName.Length > 0) ? part.FindModelTransform(cameraTransformName) : part.transform;
+			stdCam.transform.parent = (cameraTransformName.Length > 0) ? part.FindModelTransform (cameraTransformName) : part.transform;
 			Camera.main.nearClipPlane = cameraClip;
 			stdCam.SetFoV (cameraFoV);
 			stdCam.transform.localPosition = cameraPosition;
-			stdCam.transform.localRotation = Quaternion.LookRotation(cameraForward, cameraUp);
+			stdCam.transform.localRotation = Quaternion.LookRotation (cameraForward, cameraUp);
 		}
 
-		public void unsetDPCam()
+		public void unsetDPCam ()
 		{
 			// Set parameters to old values
 			stdCam.transform.parent = sOrigParent;
@@ -114,18 +117,16 @@ namespace DPCamera
 			stdCam.transform.localRotation = sOrigRotation;
 			Camera.main.nearClipPlane = sOrigClip;
 			stdCam.SetFoV (sOrigFov);
-			if (FlightGlobals.ActiveVessel != null && HighLogic.LoadedScene == GameScenes.FLIGHT)
-			{
-				stdCam.setTarget(FlightGlobals.ActiveVessel.transform);
+			if (FlightGlobals.ActiveVessel != null && HighLogic.LoadedScene == GameScenes.FLIGHT) {
+				stdCam.setTarget (FlightGlobals.ActiveVessel.transform);
 			}
 			
 			// This will hide the Deactivate event, and show the Activate event.
-			Events["ActivateEvent"].active = true;
-			Events["DeactivateEvent"].active = false;
+			Events ["ActivateEvent"].active = true;
+			Events ["DeactivateEvent"].active = false;
 			
 			// Flag for FixedUpdate conditional statement, keeps this block from executing
 			inDPCam = false;
-			unlockReady = true;
 		}
 		
 		/*
@@ -135,72 +136,77 @@ namespace DPCamera
 	* in key assignments.
 	*/
 		
-		public void FixedUpdate()
+		public void FixedUpdate ()
 		{
-			if (inDPCam && !MapView.MapIsEnabled && (Input.GetKeyDown (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyDown () || GameSettings.FOCUS_PREV_VESSEL.GetKeyDown () ))
+			if (inDPCam)
 			{
-				unsetDPCam ();		
+				if (!MapView.MapIsEnabled && (Input.GetKeyDown (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyDown () || GameSettings.FOCUS_PREV_VESSEL.GetKeyDown ())) {
+					unsetDPCam ();		
+				}
+				if (stdCam.Target != null) {
+					unsetDPCam ();
+					unlockReady = true;
+				}
+				if (MapView.MapIsEnabled && !mapWasActive) {
+					mapWasActive = true;			
+				}
+				if (mapWasActive && !MapView.MapIsEnabled) {
+					setDPCam ();
+					mapWasActive = false;
+				}
 			}
-			if (inDPCam && stdCam.Target != null)
+			else
 			{
-				unsetDPCam ();
+				if (Input.GetKeyUp (GameSettings.CAMERA_MODE.primary) && InputLockManager.IsLocked (ControlTypes.CAMERAMODES))
+		    		{
+					unlockReady = true;
+				}
 			}
-			if (unlockReady && Input.GetKeyUp (GameSettings.CAMERA_MODE.primary))
+			if (unlockReady)
 			{
-				InputLockManager.RemoveControlLock("DPCamLock");
+				InputLockManager.RemoveControlLock ("DPCamLock");
 				unlockReady = false;
 			}
-			if (MapView.MapIsEnabled)
-			{
-				mapWasActive = true;			
-			}
-			if (mapWasActive && !MapView.MapIsEnabled)
-			{
-				setDPCam ();
-				mapWasActive = false;
-			}
-			// base.OnFixedUpdate();
 		}
 		
 		/* Adds Recticle to view 
 	*/
-		void OnGUI()
+		void OnGUI ()
 		{
 			//if not paused and in DPCamera view
-			if (Time.timeScale != 0 && inDPCam && !MapView.MapIsEnabled)
-			{
-				if(crosshairTexture!=null)
-					GUI.DrawTexture(new Rect((Screen.width-crosshairTexture.width*crosshairScale)/2 ,(Screen.height-crosshairTexture.height*crosshairScale)/2, crosshairTexture.width*crosshairScale, crosshairTexture.height*crosshairScale),crosshairTexture);
+			if (Time.timeScale != 0 && inDPCam && !MapView.MapIsEnabled) {
+				if (crosshairTexture != null)
+					GUI.DrawTexture (new Rect ((Screen.width - crosshairTexture.width * crosshairScale) / 2, (Screen.height - crosshairTexture.height * crosshairScale) / 2, crosshairTexture.width * crosshairScale, crosshairTexture.height * crosshairScale), crosshairTexture);
 				else
-					Debug.LogWarning("[DPCamera] No reticle texture set in the Inspector");
+					Debug.LogWarning ("[DPCamera] No reticle texture set in the Inspector");
 			}
 		}
 		
 		/* Initialize Routine - Load Texture
 	*/
-		public override void OnStart(StartState state)
+		public override void OnStart (StartState state)
 		{
 			
-			crosshairTexture = LoadTextureFile("reticle.png");
+			crosshairTexture = LoadTextureFile ("reticle.png");
 			
 			base.OnStart (state);
 		}
 		
 		/* Stolen from MovieTime plugin :)
 	*/
-		public static Texture2D LoadTextureFile(string fileName) 
+		public static Texture2D LoadTextureFile (string fileName)
 		{
 			try {
 				string path;
 				
-				path = KSPUtil.ApplicationRootPath.Replace(@"\", "/") + "/GameData/FP_KOAS/Textures/" + fileName;
+				path = KSPUtil.ApplicationRootPath.Replace (@"\", "/") + "/GameData/FP_KOAS/Textures/" + fileName;
 
-				byte[] texture = File.ReadAllBytes(path);
-				Texture2D retVal = new Texture2D(1, 1);
-				retVal.LoadImage(texture);
+				byte[] texture = File.ReadAllBytes (path);
+				Texture2D retVal = new Texture2D (1, 1);
+				retVal.LoadImage (texture);
 				return retVal;
 			} catch (Exception ex) {
-				Debug.LogError(string.Format("[DPCamera] LoadTextureFile exception: {0}", ex.Message));
+				Debug.LogError (string.Format ("[DPCamera] LoadTextureFile exception: {0}", ex.Message));
 			}
 			return null;
 		}
