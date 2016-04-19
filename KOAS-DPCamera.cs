@@ -48,7 +48,7 @@ namespace DPCamera {
 		bool inDPCam;
 		bool unlockReady;
 		bool mapWasActive;
-		bool buttonIsDeactivate;
+		static bool buttonIsDeactivate;
 		public Texture2D crosshairTexture;
 		public float crosshairScale = 1;
 
@@ -132,9 +132,14 @@ namespace DPCamera {
 		
 		public void FixedUpdate ()
 		{
+			if (unlockReady) {
+				InputLockManager.RemoveControlLock ("DPCamLock");
+				unlockReady = false;
+			}
 			if (inDPCam) {
 				if (!MapView.MapIsEnabled && (Input.GetKeyDown (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyDown () || GameSettings.FOCUS_PREV_VESSEL.GetKeyDown ())) {
-					unsetDPCam ();		
+					unsetDPCam ();
+					unlockReady = true;
 				}
 				if (nativeCam.Target != null) {
 					unsetDPCam ();
@@ -149,12 +154,8 @@ namespace DPCamera {
 				}
 			} else {
 				if (Input.GetKeyUp (GameSettings.CAMERA_MODE.primary) && InputLockManager.IsLocked (ControlTypes.CAMERAMODES)) {
-					unlockReady = true;
+					//unlockReady = true;
 				}
-			}
-			if (unlockReady) {
-				InputLockManager.RemoveControlLock ("DPCamLock");
-				unlockReady = false;
 			}
 			if (buttonIsDeactivate) {
 				Events ["ActivateEvent"].active = false;
