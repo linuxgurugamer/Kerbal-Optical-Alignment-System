@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-/* TODO: Bugs 
+/* TODO: Is there a better way to do any of this?  It feels like it's starting to get messy... 
  *            
  * 
  * */
@@ -60,6 +60,7 @@ namespace DPCamera {
 		[KSPEvent(guiActive = true, guiName = "View from Here")]
 		public void ActivateEvent () {
 			if (!inDPCam) {
+				Debug.Log ("[DPCamera] - Enter DPCam View");
 				ScreenMessages.PostScreenMessage ("Docking View Activated - Press " + GameSettings.CAMERA_MODE.primary + " to Exit", 5.0f, ScreenMessageStyle.UPPER_CENTER);
 				
 				nativeCam = FlightCamera.fetch;
@@ -97,6 +98,7 @@ namespace DPCamera {
 		}
 		
 		public void setDPCam ()	{
+			Debug.Log ("[DPCamera] - Set DPCam View Values");
 			nativeCam.setTarget (null);
 			nativeCam.transform.parent = (cameraTransformName.Length > 0) ? part.FindModelTransform (cameraTransformName) : part.transform;
 			Camera.main.nearClipPlane = cameraClip;
@@ -107,6 +109,7 @@ namespace DPCamera {
 
 		public void unsetDPCam () {
 			// Set parameters to old values
+			Debug.Log ("[DPCamera] - Clear DPCam View Values and reset to stored values");
 			nativeCam.transform.parent = storedCamParent;
 			nativeCam.transform.localPosition = storedCamPosition;
 			nativeCam.transform.localRotation = storedCamRotation;
@@ -132,6 +135,10 @@ namespace DPCamera {
 		
 		public void FixedUpdate ()
 		{
+			if (part.State == PartStates.DEAD) {
+				this.unsetDPCam ();
+				unlockReady = true;
+			}
 			if (unlockReady) {
 				InputLockManager.RemoveControlLock ("DPCamLock");
 				unlockReady = false;
@@ -154,7 +161,7 @@ namespace DPCamera {
 				}
 			} else {
 				if (Input.GetKeyUp (GameSettings.CAMERA_MODE.primary) && InputLockManager.IsLocked (ControlTypes.CAMERAMODES)) {
-					//unlockReady = true;
+					Debug.Log ("[DPCamera] - Cam Key released with lock still set");
 				}
 			}
 			if (buttonIsDeactivate) {
@@ -181,11 +188,36 @@ namespace DPCamera {
 		/* Initialize Routine - Load Texture
 	*/
 		public override void OnStart (StartState state)	{
-			
-			crosshairTexture = LoadTextureFile ("reticle.png");
+			Debug.Log ("[DPCamera] OnStart Called: State was " + state);
 			base.OnStart (state);
+
+			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
+				return;
+
+			crosshairTexture = LoadTextureFile ("reticle.png");
+			part.OnJustAboutToBeDestroyed += cleanupDPCam;
 		}
-		
+
+		private void onGameSceneLoadRequested(GameScenes gameScene) {
+			Debug.Log ("[DPCamera] - Game Scene Load Requested: " + gameScene);
+
+			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
+				return;
+
+			if (inDPCam) {
+				Debug.Log ("[DPCamera] - So we kill our camera");
+				this.unsetDPCam ();
+				unlockReady = true;
+			}
+		}
+
+		public override void OnAwake() {
+			Debug.Log ("[DPCamera] - OnAwake: " + HighLogic.LoadedScene);
+			base.OnAwake();
+
+			GameEvents.onGameSceneLoadRequested.Add(onGameSceneLoadRequested);
+		}
+
 		/* Stolen from MovieTime plugin :)
 	*/
 		public static Texture2D LoadTextureFile (string fileName) {
@@ -202,6 +234,12 @@ namespace DPCamera {
 				Debug.LogError (string.Format ("[DPCamera] LoadTextureFile exception: {0}", ex.Message));
 			}
 			return null;
+		}
+
+		void cleanupDPCam() {
+			Debug.Log ("[DPCamera] - cleanup Fired");
+			this.unsetDPCam ();
+			unlockReady = true;
 		}
 	}
 }
