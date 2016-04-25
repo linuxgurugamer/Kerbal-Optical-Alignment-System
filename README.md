@@ -23,16 +23,13 @@ Adding the Camera
 ```
 @PART[dockingPort1]
 {
-  MODULE
-  {
-    name = DPCamera
-    cameraName = DPCam
-    cameraForward = 0, 1, 0
-    cameraUp = 0, 0, -1
-    cameraPosition = 0, 0.12, 0.0
-    cameraFoVMax = 80
-    cameraFoVMin = 80
-    cameraMode = 1
+	MODULE
+	{
+		name = DPCamera
+		cameraName = DPCam
+		cameraForward = 0, 1, 0
+		cameraUp = 0, 0, -1
+		cameraPosition = 0, 0.12, 0.0
 	}
 }
 ```
