@@ -60,7 +60,7 @@ namespace DPCamera {
 		[KSPEvent(guiActive = true, guiName = "View from Here")]
 		public void ActivateEvent () {
 			if (!inDPCam) {
-				Debug.Log ("[DPCamera] - Enter DPCam View");
+				printToLog ("[DPCamera] - Enter DPCam View", 1);
 				ScreenMessages.PostScreenMessage ("Docking View Activated - Press " + GameSettings.CAMERA_MODE.primary + " to Exit", 5.0f, ScreenMessageStyle.UPPER_CENTER);
 				
 				nativeCam = FlightCamera.fetch;
@@ -84,7 +84,7 @@ namespace DPCamera {
 				// This will hide the Activate event, and show the Deactivate event.
 				buttonIsDeactivate = true;
 			} else {
-				Debug.LogWarning ("[DPCamera] DPCam Activated when while inDPCam");
+				printToLog ("[DPCamera] DPCam Activated when while inDPCam", 2);
 			}
 		}
 		
@@ -98,7 +98,7 @@ namespace DPCamera {
 		}
 		
 		public void setDPCam ()	{
-			Debug.Log ("[DPCamera] - Set DPCam View Values");
+			printToLog ("[DPCamera] - Set DPCam View Values", 1);
 			nativeCam.setTarget (null);
 			nativeCam.transform.parent = (cameraTransformName.Length > 0) ? part.FindModelTransform (cameraTransformName) : part.transform;
 			Camera.main.nearClipPlane = cameraClip;
@@ -108,22 +108,22 @@ namespace DPCamera {
 		}
 
 		public void unsetDPCam () {
-			// Set parameters to old values
-			Debug.Log ("[DPCamera] - Clear DPCam View Values and reset to stored values");
-			nativeCam.transform.parent = storedCamParent;
-			nativeCam.transform.localPosition = storedCamPosition;
-			nativeCam.transform.localRotation = storedCamRotation;
-			Camera.main.nearClipPlane = storedCamClipPlane;
-			nativeCam.SetFoV (storedCamFoV);
-			if (FlightGlobals.ActiveVessel != null && HighLogic.LoadedScene == GameScenes.FLIGHT) {
-				nativeCam.setTarget (FlightGlobals.ActiveVessel.transform);
+			if (inDPCam) {
+				inDPCam = false;
+				// Set parameters to old values
+				printToLog ("[DPCamera] - Clear DPCam View Values and reset to stored values", 1);
+				nativeCam.transform.parent = storedCamParent;
+				nativeCam.transform.localPosition = storedCamPosition;
+				nativeCam.transform.localRotation = storedCamRotation;
+				Camera.main.nearClipPlane = storedCamClipPlane;
+				nativeCam.SetFoV (storedCamFoV);
+				if (FlightGlobals.ActiveVessel != null && HighLogic.LoadedScene == GameScenes.FLIGHT) {
+					nativeCam.setTarget (FlightGlobals.ActiveVessel.transform);
+				}
+				
+				// This will hide the Deactivate event, and show the Activate event.
+				buttonIsDeactivate = false;
 			}
-			
-			// This will hide the Deactivate event, and show the Activate event.
-			buttonIsDeactivate = false;
-			
-			// Flag for FixedUpdate conditional statement, keeps this block from executing
-			inDPCam = false;
 		}
 		
 		/*
@@ -136,6 +136,7 @@ namespace DPCamera {
 		public void FixedUpdate ()
 		{
 			if (part.State == PartStates.DEAD) {
+				printToLog ("[DPCamera] - Dead", 1);
 				this.unsetDPCam ();
 				unlockReady = true;
 			}
@@ -144,24 +145,26 @@ namespace DPCamera {
 				unlockReady = false;
 			}
 			if (inDPCam) {
-				if (!MapView.MapIsEnabled && (Input.GetKeyDown (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyDown () || GameSettings.FOCUS_PREV_VESSEL.GetKeyDown ())) {
-					unsetDPCam ();
+				if (!MapView.MapIsEnabled && (Input.GetKeyDown (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyDown() || GameSettings.FOCUS_PREV_VESSEL.GetKeyDown () )) {
+					printToLog ("[DPCamera] - Keypress Detected", 1);
+					this.unsetDPCam ();
 					unlockReady = true;
 				}
 				if (nativeCam.Target != null) {
-					unsetDPCam ();
+					printToLog ("[DPCamera] - Target not null", 1);
+					this.unsetDPCam ();
 					unlockReady = true;
 				}
 				if (MapView.MapIsEnabled && !mapWasActive) {
 					mapWasActive = true;			
 				}
 				if (mapWasActive && !MapView.MapIsEnabled) {
-					setDPCam ();
+					this.setDPCam ();
 					mapWasActive = false;
 				}
 			} else {
 				if (Input.GetKeyUp (GameSettings.CAMERA_MODE.primary) && InputLockManager.IsLocked (ControlTypes.CAMERAMODES)) {
-					Debug.Log ("[DPCamera] - Cam Key released with lock still set");
+					printToLog ("[DPCamera] - Cam Key released with lock still set", 1);
 				}
 			}
 			if (buttonIsDeactivate) {
@@ -181,14 +184,14 @@ namespace DPCamera {
 				if (crosshairTexture != null)
 					GUI.DrawTexture (new Rect ((Screen.width - crosshairTexture.width * crosshairScale) / 2, (Screen.height - crosshairTexture.height * crosshairScale) / 2, crosshairTexture.width * crosshairScale, crosshairTexture.height * crosshairScale), crosshairTexture);
 				else
-					Debug.LogWarning ("[DPCamera] No reticle texture set in the Inspector");
+					printToLog ("[DPCamera] No reticle texture set in the Inspector", 2);
 			}
 		}
 		
 		/* Initialize Routine - Load Texture
 	*/
 		public override void OnStart (StartState state)	{
-			Debug.Log ("[DPCamera] OnStart Called: State was " + state);
+			printToLog ("[DPCamera] OnStart Called: State was " + state, 1);
 			base.OnStart (state);
 
 			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
@@ -199,20 +202,20 @@ namespace DPCamera {
 		}
 
 		private void onGameSceneLoadRequested(GameScenes gameScene) {
-			Debug.Log ("[DPCamera] - Game Scene Load Requested: " + gameScene);
+			printToLog ("[DPCamera] - Game Scene Load Requested: " + gameScene, 1);
 
 			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
 				return;
 
 			if (inDPCam) {
-				Debug.Log ("[DPCamera] - So we kill our camera");
+				printToLog ("[DPCamera] - So we kill our camera", 1);
 				this.unsetDPCam ();
 				unlockReady = true;
 			}
 		}
 
 		public override void OnAwake() {
-			Debug.Log ("[DPCamera] - OnAwake: " + HighLogic.LoadedScene);
+			printToLog ("[DPCamera] - OnAwake: " + HighLogic.LoadedScene, 1);
 			base.OnAwake();
 
 			GameEvents.onGameSceneLoadRequested.Add(onGameSceneLoadRequested);
@@ -231,15 +234,34 @@ namespace DPCamera {
 				retVal.LoadImage (texture);
 				return retVal;
 			} catch (Exception ex) {
-				Debug.LogError (string.Format ("[DPCamera] LoadTextureFile exception: {0}", ex.Message));
+				Debug.Log (string.Format ("[DPCamera] LoadTextureFile exception: {0}", ex.Message));
 			}
 			return null;
 		}
 
 		void cleanupDPCam() {
-			Debug.Log ("[DPCamera] - cleanup Fired");
+			printToLog ("[DPCamera] - cleanup Fired", 2);
 			this.unsetDPCam ();
 			unlockReady = true;
+		}
+
+		void printToLog(string outText, int styleFlag) {
+#if DEBUG
+			switch (styleFlag) {
+			case 1:
+				Debug.Log (outText);
+				break;
+			case 2:
+				Debug.LogWarning (outText);
+				break;
+			case 3:
+				Debug.LogError (outText);
+				break;
+			default:
+				Debug.LogError ("[DPCamera] Improper call to internal logger.");
+				break;
+			}
+#endif
 		}
 	}
 }
