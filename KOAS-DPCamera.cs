@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-/* TODO: Is there a better way to do any of this?  It feels like it's starting to get messy... 
+/* TODO: Add config options, such as reticle on/off 
  *            
  * 
  * */
