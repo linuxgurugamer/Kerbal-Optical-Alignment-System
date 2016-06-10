@@ -19,7 +19,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-/* TODO: Add config options, such as reticle on/off 
+/* TODO: none 
  *            
  * 
  * */
@@ -27,8 +27,10 @@ using System;
 using System.IO;
 using UnityEngine;
 
-namespace DPCamera {
-	public class DPCamera : PartModule {
+namespace DPCamera
+{
+	public class DPCamera : PartModule
+	{
 		[KSPField]
 		public Vector3
 			cameraPosition = Vector3.zero;		//Eyepoint
@@ -73,7 +75,8 @@ namespace DPCamera {
 	* clicked, the ActivateEvent() function is called.
 	*/
 		[KSPEvent(guiActive = true, guiName = "View from Here")]
-		public void ActivateEvent () {
+		public void ActivateEvent ()
+		{
 			if (!inDPCam) {
 				printToLog ("Enter DPCam View", 1);
 				ScreenMessages.PostScreenMessage ("Docking View Activated - Press " + GameSettings.CAMERA_MODE.primary + " to Exit", 5.0f, ScreenMessageStyle.UPPER_CENTER);
@@ -108,17 +111,20 @@ namespace DPCamera {
 	 */
 		
 		[KSPEvent(guiActive = true, guiName = "Close this Window", active = false)]
-		public void DeactivateEvent () {
+		public void DeactivateEvent ()
+		{
 			// Remove the rightclick GUI so it's not in the way
 			UIPartActionController.Instance.Deselect (true);
 		}
 
-		public void getDPCamTransform () {
+		public void getDPCamTransform ()
+		{
 			printToLog ("Get DPCam transform", 1);
 			DPCamTransform = (cameraTransformName.Length > 0) ? part.FindModelTransform (cameraTransformName) : part.transform;
 		}
 
-		public void setDPCam ()	{
+		public void setDPCam ()
+		{
 			printToLog ("Set DPCam View Values", 1);
 			nativeCam.setTarget (null);
 			nativeCam.transform.parent = DPCamTransform;
@@ -128,7 +134,8 @@ namespace DPCamera {
 			nativeCam.transform.localRotation = Quaternion.LookRotation (cameraForward, cameraUp);
 		}
 
-		public void unsetDPCam () {
+		public void unsetDPCam ()
+		{
 			if (inDPCam) {
 				inDPCam = false;
 				// Set parameters to old values
@@ -160,15 +167,15 @@ namespace DPCamera {
 				this.unsetDPCam ();
 				unlockReady = true;
 			}
-			if (unlockReady && (Input.GetKeyUp (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyUp() || GameSettings.FOCUS_PREV_VESSEL.GetKeyUp () )) {
+			if (unlockReady && (Input.GetKeyUp (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyUp () || GameSettings.FOCUS_PREV_VESSEL.GetKeyUp ())) {
 				InputLockManager.RemoveControlLock ("DPCamLock");
 				unlockReady = false;
 			}
 			if (inDPCam) {
-				if (!MapView.MapIsEnabled && (Input.GetKeyDown (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyDown() || GameSettings.FOCUS_PREV_VESSEL.GetKeyDown () )) {
+				if (!MapView.MapIsEnabled && (Input.GetKeyDown (GameSettings.CAMERA_MODE.primary) || GameSettings.FOCUS_NEXT_VESSEL.GetKeyDown () || GameSettings.FOCUS_PREV_VESSEL.GetKeyDown ())) {
 					printToLog ("Keypress Detected", 1);
 					if (CameraManager.Instance.currentCameraMode == CameraManager.CameraMode.IVA) {
-						CameraManager.Instance.SetCameraMode(CameraManager.CameraMode.Flight);
+						CameraManager.Instance.SetCameraMode (CameraManager.CameraMode.Flight);
 						this.setDPCam ();
 						return;
 					}
@@ -209,7 +216,8 @@ namespace DPCamera {
 		
 		/* Adds Recticle to view 
 	*/
-		void OnGUI () {
+		void OnGUI ()
+		{
 			//if not paused and in DPCamera view
 			if (Time.timeScale != 0 && inDPCam && !MapView.MapIsEnabled && reticleVisible && CameraManager.Instance.currentCameraMode != CameraManager.CameraMode.IVA) {
 				if (crosshairTexture != null)
@@ -221,7 +229,8 @@ namespace DPCamera {
 		
 		/* Initialize Routine - Load Texture
 	*/
-		public override void OnStart (StartState state)	{
+		public override void OnStart (StartState state)
+		{
 			printToLog ("OnStart Called: State was " + state, 1);
 			base.OnStart (state);
 
@@ -232,7 +241,8 @@ namespace DPCamera {
 			part.OnJustAboutToBeDestroyed += cleanupDPCam;
 		}
 
-		private void onGameSceneLoadRequested(GameScenes gameScene) {
+		private void onGameSceneLoadRequested (GameScenes gameScene)
+		{
 			printToLog ("Game Scene Load Requested: " + gameScene, 1);
 
 			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
@@ -245,20 +255,23 @@ namespace DPCamera {
 			}
 		}
 
-		public override void OnAwake() {
+		public override void OnAwake ()
+		{
 			printToLog ("OnAwake: " + HighLogic.LoadedScene, 1);
-			base.OnAwake();
+			base.OnAwake ();
 
-			GameEvents.onGameSceneLoadRequested.Add(onGameSceneLoadRequested);
+			GameEvents.onGameSceneLoadRequested.Add (onGameSceneLoadRequested);
 		}
 
-		public void OnDestroy() {
+		public void OnDestroy ()
+		{
 			printToLog ("OnDestroy", 1);
 			cleanupDPCam ();
 			InputLockManager.RemoveControlLock ("DPCamLock");
 		}
 		
-		public void OnUnload() {
+		public void OnUnload ()
+		{
 			printToLog ("OnUnload", 1);
 			cleanupDPCam ();
 			InputLockManager.RemoveControlLock ("DPCamLock");
@@ -266,7 +279,8 @@ namespace DPCamera {
 
 		/* Stolen from MovieTime plugin :)
 	*/
-		public static Texture2D LoadTextureFile (string fileName) {
+		public static Texture2D LoadTextureFile (string fileName)
+		{
 			try {
 				string path;
 				
@@ -282,13 +296,15 @@ namespace DPCamera {
 			return null;
 		}
 
-		void cleanupDPCam() {
+		void cleanupDPCam ()
+		{
 			printToLog ("CleanupDPCam Fired", 2);
 			this.unsetDPCam ();
 			unlockReady = true;
 		}
 
-		void printToLog(string outText, int styleFlag) {
+		void printToLog (string outText, int styleFlag)
+		{
 #if DEBUG
 			switch (styleFlag) {
 			case 1:
