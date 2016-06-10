@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Kerbal-optical-alignment-system by TedThompson</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Kerbal-optical-alignment-system</h1>
+        <h2>KOAS is a visual alignment aid for docking vessels in Kerbal Space program.</h2>
+        <a href="https://github.com/TedThompson/Kerbal-Optical-Alignment-System" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="kerbal-optical-alignment-system" class="anchor" href="#kerbal-optical-alignment-system" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Kerbal-Optical-Alignment-System</h1>
+
+<h2>
+<a id="synopsis" class="anchor" href="#synopsis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Synopsis</h2>
+
+<p>Adds an optical sight and target to stock docking ports in Kerbal Space Program(tm).  </p>
+
+<h2>
+<a id="motivation" class="anchor" href="#motivation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Motivation</h2>
+
+<p>I wanted to 'kick it old school'.  Back before KSP I experienced this sort of seat of the pants docking in an Apollo simulation created for Orbiter (a great open source space simulator) and I wanted to be able to do that in KSP.  I also felt like something was lacking in the stock game when it came to docking.  Magnetic ports do forgive some amount of inaccuracy, but I felt we should be able to be more precise.  </p>
+
+<p>I made every effort to make this mod a incognito as possible, try to add it in to the game so it seemd like Squad did it themselves.  </p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p><strong>Be sure to have the latest version of <a href="http://forum.kerbalspaceprogram.com/index.php?/topic/50533-110-module-manager-2622-april-19th-with-even-more-sha-and-less-bug/">ModuleManger</a> installed!</strong></p>
+
+<p>Upzip it into your GameData folder, as with most other mods.</p>
+
+<h2>
+<a id="api-reference" class="anchor" href="#api-reference" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>API Reference</h2>
+
+<p>If you wish to add this mod to your own parts (or your favorite parts) follow these ModuleManager config examples:</p>
+
+<p>Adding the Camera</p>
+
+<pre><code>@PART[dockingPort1]
+{
+    MODULE
+    {
+        name = DPCamera
+        cameraName = DPCam
+        cameraForward = 0, 1, 0
+        cameraUp = 0, 0, -1
+        cameraPosition = 0, 0.12, 0.0
+    }
+}
+</code></pre>
+
+<p>Adding the Target</p>
+
+<pre><code>@PART[dockingPort1]
+{
+    MODEL
+    {
+        model = FP_KOAS/Parts/DockingTarget/COAS_Target
+        position = 0,0.11,0
+        scale = 1,1,1
+        rotation = 0,0,0
+    }
+    MODEL
+    {
+        model = Squad/Parts/Utility/dockingPortShielded/model
+    }
+    !mesh=DELETE
+}
+</code></pre>
+
+<p><strong>Note</strong> that in both cases the values in "Position" will likely need to be adjusted to get the eyepoint and target models in the right place.</p>
+
+<h2>
+<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How-To-Use</h2>
+
+<p>Simply right-click the port of the craft you are flying, choose "Control from Here" so the manuvering keys work correctly, and then "View from Here" to be taken into "Docking View".</p>
+
+<p>To exit, just do as the message on screen said and hit the "Camera Key" (default 'c') as a bonus, the next / previous vessel keys (default '[',']') will also "pop" you back into the external view.</p>
+
+<h2>
+<a id="contributors" class="anchor" href="#contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributors</h2>
+
+<p>Guru's who answered my questions:</p>
+
+<ul>
+<li>JPLRepo</li>
+<li>sarbian</li>
+<li>Warezcrawler</li>
+<li>  Padishar</li>
+</ul>
+
+<p>Authors whose plugins were studied for clues and code:</p>
+
+<ul>
+<li>Albert VDS</li>
+<li>bernierm</li>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>GNU GENERAL PUBLIC LICENSE V3 dated 6/29/2007</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/TedThompson/Kerbal-Optical-Alignment-System/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/TedThompson/Kerbal-Optical-Alignment-System/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/TedThompson/Kerbal-Optical-Alignment-System"></a> is maintained by <a href="https://github.com/TedThompson">TedThompson</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
