@@ -29,138 +29,168 @@ using UnityEngine;
 
 namespace DPCamera
 {
-	public class DPCamera : PartModule
-	{
-		[KSPField]
-		public Vector3
-			cameraPosition = Vector3.zero;		//Eyepoint
-		[KSPField]
-		public Vector3
-			cameraForward = Vector3.forward;	//Viewing TOWARD Direction
-		[KSPField]
-		public Vector3
-			cameraUp = Vector3.up;			//Viewing UP Direction
-		[KSPField]
-		public string
-			cameraTransformName = "";		//transform 
-		[KSPField]
-		public float
-			cameraFoV = 60;				//Zoom (FOV angle)
-		[KSPField]
-		public Boolean
-			reticleVisible = true;
-		[KSPField(isPersistant = false)]
-		public float
-			cameraClip = 0.01f;			//Distance at which clipping occurs
-		[KSPField(isPersistant = false)]
-		public string
-			cameraName = "DPCam";			//Name Ident
-		public FlightCamera nativeCam;
-		protected static Transform storedCamParent;
-		protected static Transform DPCamTransform;
-		protected static Quaternion storedCamRotation = Quaternion.identity;
-		protected static Vector3 storedCamPosition = Vector3.zero;
-		protected static float storedCamFoV;
-		protected static float storedCamClipPlane;
-		bool inDPCam;
-		bool unlockReady;
-		bool mapWasActive;
-		static bool buttonIsDeactivate;
-		public Texture2D crosshairTexture;
-		public float crosshairScale = 1;
+    public class DPCamera : PartModule
+    {
+        [KSPField]
+        public Vector3
+            cameraPosition = Vector3.zero;      //Eyepoint
+        [KSPField]
+        public Vector3
+            cameraForward = Vector3.forward;    //Viewing TOWARD Direction
+        [KSPField]
+        public Vector3
+            cameraUp = Vector3.up;          //Viewing UP Direction
+        [KSPField]
+        public string
+            cameraTransformName = "";       //transform 
+        [KSPField]
+        public float
+            cameraFoV = 60;             //Zoom (FOV angle)
+        [KSPField]
+        public Boolean
+            reticleVisible = true;
+        [KSPField(isPersistant = false)]
+        public float
+            cameraClip = 0.01f;         //Distance at which clipping occurs
+        [KSPField(isPersistant = false)]
+        public string
+            cameraName = "DPCam";           //Name Ident
+        public FlightCamera nativeCam;
+        protected static Transform storedCamParent;
+        protected static Transform DPCamTransform;
+        protected static Quaternion storedCamRotation = Quaternion.identity;
+        protected static Vector3 storedCamPosition = Vector3.zero;
+        protected static float storedCamFoV;
+        protected static float storedCamClipPlane;
+        bool inDPCam;
+        bool unlockReady;
+        bool mapWasActive;
+        static bool buttonIsDeactivate;
+        public Texture2D crosshairTexture;
+        public float crosshairScale = 1;
 
-		/*
+        /*
 	* This event is active when controlling the vessel with the part. 
 	* Adds "Clicklable Button" to rightclick GUI. When the new button is
 	* clicked, the ActivateEvent() function is called.
 	*/
-		[KSPEvent(guiActive = true, guiName = "View from Here")]
-		public void ActivateEvent ()
-		{
-			if (!inDPCam) {
-				printToLog ("Enter DPCam View", 1);
-				ScreenMessages.PostScreenMessage ("Docking View Activated - Press " + GameSettings.CAMERA_MODE.primary + " to Exit", 5.0f, ScreenMessageStyle.UPPER_CENTER);
-				
-				nativeCam = FlightCamera.fetch;
-				
-				// Grab all Standard ingame camera parameters
-				storedCamParent = nativeCam.transform.parent;
-				storedCamClipPlane = Camera.main.nearClipPlane;
-				storedCamFoV = Camera.main.fieldOfView;
-				storedCamPosition = nativeCam.transform.localPosition;
-				storedCamRotation = nativeCam.transform.localRotation;
+        [KSPEvent(guiActive = true, guiName = "View from Here")]
+        public void ActivateEvent()
+        {
+            if (!inDPCam) {
+                printToLog("Enter DPCam View", 1);
+                ScreenMessages.PostScreenMessage("Docking View Activated - Press " + GameSettings.CAMERA_MODE.primary + " to Exit", 5.0f, ScreenMessageStyle.UPPER_CENTER);
 
-				// Set parameters to new values
-				getDPCamTransform ();
-				setDPCam ();
-				
-				// Lockout the "View" camera mode key from being used when in DPCamera view
-				InputLockManager.SetControlLock (ControlTypes.CAMERAMODES, "DPCamLock");
-				// Remove the rightclick GUI so it's not in the way
-				UIPartActionController.Instance.Deselect (true);
-				// Flag for FixedUpdate conditional statement below
-				inDPCam = true;
-				// This will hide the Activate event, and show the Deactivate event.
-				buttonIsDeactivate = true;
-			} else {
-				printToLog ("DPCam Activated when while inDPCam", 2);
-			}
-		}
-		
-		/* Because sometimes you can rightclick and get the menu back (Shielded Docking Port) 
+                nativeCam = FlightCamera.fetch;
+
+                // Grab all Standard ingame camera parameters
+                storedCamParent = nativeCam.transform.parent;
+                storedCamClipPlane = Camera.main.nearClipPlane;
+                storedCamFoV = Camera.main.fieldOfView;
+                storedCamPosition = nativeCam.transform.localPosition;
+                storedCamRotation = nativeCam.transform.localRotation;
+
+                // Set parameters to new values
+                getDPCamTransform();
+                setDPCam();
+
+                // Lockout the "View" camera mode key from being used when in DPCamera view
+                InputLockManager.SetControlLock(ControlTypes.CAMERAMODES, "DPCamLock");
+                // Remove the rightclick GUI so it's not in the way
+                UIPartActionController.Instance.Deselect(true);
+                // Flag for FixedUpdate conditional statement below
+                inDPCam = true;
+                // This will hide the Activate event, and show the Deactivate event.
+                buttonIsDeactivate = true;
+            } else {
+                printToLog("DPCam Activated when while inDPCam", 2);
+            }
+        }
+
+        /* Because sometimes you can rightclick and get the menu back (Shielded Docking Port) 
 	 */
-		
-		[KSPEvent(guiActive = true, guiName = "Close this Window", active = false)]
-		public void DeactivateEvent ()
-		{
-			// Remove the rightclick GUI so it's not in the way
-			UIPartActionController.Instance.Deselect (true);
-		}
 
-		public void getDPCamTransform ()
-		{
-			printToLog ("Get DPCam transform", 1);
-			DPCamTransform = (cameraTransformName.Length > 0) ? part.FindModelTransform (cameraTransformName) : part.transform;
-		}
+        [KSPEvent(guiActive = true, guiName = "Close this Window", active = false)]
+        public void DeactivateEvent()
+        {
+            // Remove the rightclick GUI so it's not in the way
+            UIPartActionController.Instance.Deselect(true);
+        }
 
-		public void setDPCam ()
-		{
-			printToLog ("Set DPCam View Values", 1);
-			nativeCam.setTarget (null);
-			nativeCam.transform.parent = DPCamTransform;
-			Camera.main.nearClipPlane = cameraClip;
-			nativeCam.SetFoV (cameraFoV);
-			nativeCam.transform.localPosition = cameraPosition;
-			nativeCam.transform.localRotation = Quaternion.LookRotation (cameraForward, cameraUp);
-		}
+        public void getDPCamTransform()
+        {
+            printToLog("Get DPCam transform", 1);
+            DPCamTransform = (cameraTransformName.Length > 0) ? part.FindModelTransform(cameraTransformName) : part.transform;
+        }
 
-		public void unsetDPCam ()
-		{
-			if (inDPCam) {
-				inDPCam = false;
-				// Set parameters to old values
-				printToLog ("Clear DPCam View Values and reset to stored values", 1);
-				nativeCam.transform.parent = storedCamParent;
-				nativeCam.transform.localPosition = storedCamPosition;
-				nativeCam.transform.localRotation = storedCamRotation;
-				Camera.main.nearClipPlane = storedCamClipPlane;
-				nativeCam.SetFoV (storedCamFoV);
-				if (FlightGlobals.ActiveVessel != null && HighLogic.LoadedScene == GameScenes.FLIGHT) {
-					nativeCam.setTarget (FlightGlobals.ActiveVessel.transform);
-				}
-				// This will hide the Deactivate event, and show the Activate event.
-				buttonIsDeactivate = false;
-			}
-		}
-		
-		/*
-	* Escape DPCamera view - Escape happens when the Camera Mode, Next Vessel, or 
-	* Previous Vessel keys are pressed (Default 'C','[', and ']' respectively.  Using these GameSettings
-	* rather then hard coding ensures that they will track with any changes the player makes
-	* in key assignments.
-	*/
-		
-		public void FixedUpdate ()
+        public void setDPCam()
+        {
+            printToLog("Set DPCam View Values", 1);
+            getDPCamTransform();
+            nativeCam.SetTargetNone();
+            nativeCam.transform.parent = DPCamTransform;
+            nativeCam.DeactivateUpdate();
+            Camera.main.nearClipPlane = cameraClip;
+            nativeCam.SetFoV(cameraFoV);
+            nativeCam.transform.localPosition = cameraPosition;
+            nativeCam.transform.localRotation = Quaternion.LookRotation(cameraForward, cameraUp);
+            // FlightCamera.SetTarget(nativeCam.transform.localRotation);
+            GameEvents.onPartCouple.Add(onPartCouple);
+
+        }
+
+        public void unsetDPCam()
+        {
+            if (inDPCam) {
+                inDPCam = false;
+                // Set parameters to old values
+                printToLog("Clear DPCam View Values and reset to stored values", 1);
+                nativeCam.transform.parent = storedCamParent;
+                nativeCam.transform.localPosition = storedCamPosition;
+                nativeCam.transform.localRotation = storedCamRotation;
+                Camera.main.nearClipPlane = storedCamClipPlane;
+                nativeCam.SetFoV(storedCamFoV);
+                if (FlightGlobals.ActiveVessel != null && HighLogic.LoadedScene == GameScenes.FLIGHT) {
+                    FlightCamera.SetTarget(FlightGlobals.ActiveVessel.transform);
+                }
+                // This will hide the Deactivate event, and show the Activate event.
+                buttonIsDeactivate = false;
+                GameEvents.onPartCouple.Remove(onPartCouple);
+
+            }
+        }
+        private void onPartCouple(GameEvents.FromToAction<Part, Part> action)
+        {
+            if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel)
+            {
+
+                if (this.part.vessel == FlightGlobals.ActiveVessel)
+                {
+                    ScreenMessages.PostScreenMessage("EXTERNAL CAMERA LOS", 5.0f, ScreenMessageStyle.UPPER_CENTER);
+                    this.unsetDPCam();
+                    unlockReady = true;
+                }
+
+                Debug.LogError("Docked FROM: " + action.from.vessel.vesselName);
+                Debug.LogError("Docked TO: " + action.to.vessel.vesselName);
+
+                Debug.LogError("Docked TO Type Vessel: " + action.to.vessel.vesselType);
+
+                Debug.LogError("Docked FROM ID: " + action.from.vessel.id.ToString());
+                Debug.LogError("Docked TO ID: " + action.to.vessel.id.ToString());
+               
+            }
+        }
+    
+
+    /*
+* Escape DPCamera view - Escape happens when the Camera Mode, Next Vessel, or 
+* Previous Vessel keys are pressed (Default 'C','[', and ']' respectively.  Using these GameSettings
+* rather then hard coding ensures that they will track with any changes the player makes
+* in key assignments.
+*/
+
+    public void FixedUpdate ()
 		{
 			if (part.State == PartStates.DEAD) {
 				printToLog ("Dead", 1);
@@ -182,21 +212,29 @@ namespace DPCamera
 					this.unsetDPCam ();
 					unlockReady = true;
 				}
-				if (nativeCam.Target != null && !unlockReady) {
-					printToLog ("Target not null", 1);
+
+                Debug.Log("nativeCam.targetMode: " + nativeCam.targetMode.ToString() + "  unlockReady: " + unlockReady.ToString());
+                if (nativeCam.Target != null)
+                    Debug.Log("nativeCam.Target not null");
+                if (nativeCam.targetMode != FlightCamera.TargetMode.None  && !unlockReady) {
+                //if (nativeCam.Target != null && !unlockReady) {
+                    printToLog ("Target not null", 1);
 					this.unsetDPCam ();
 					InputLockManager.RemoveControlLock ("DPCamLock");
 					// unlockReady = true;
 				}
-				if (this.part.parent.vessel != FlightGlobals.ActiveVessel) {
+
+                if (this.part.vessel != FlightGlobals.ActiveVessel) {
 					ScreenMessages.PostScreenMessage ("EXTERNAL CAMERA LOS", 5.0f, ScreenMessageStyle.UPPER_CENTER);
 					this.unsetDPCam ();
 					unlockReady = true;
 				}
-				if (MapView.MapIsEnabled && !mapWasActive) {
+
+                if (MapView.MapIsEnabled && !mapWasActive) {
 					mapWasActive = true;			
 				}
-				if (mapWasActive && !MapView.MapIsEnabled) {
+
+                if (mapWasActive && !MapView.MapIsEnabled) {
 					this.setDPCam ();
 					mapWasActive = false;
 				}
@@ -268,7 +306,8 @@ namespace DPCamera
 			printToLog ("OnDestroy", 1);
 			cleanupDPCam ();
 			InputLockManager.RemoveControlLock ("DPCamLock");
-		}
+            GameEvents.onPartCouple.Remove(onPartCouple);
+        }
 		
 		public void OnUnload ()
 		{
